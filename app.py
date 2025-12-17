@@ -35,9 +35,9 @@ def init_db():
         vg = Device(
             name='GW_DM_Fonia',
             ip_address='10.255.1.2', # As per description
-            username='woffor',
-            password='woffor',
-            enable_password='woffor',
+            username='cisco',
+            password='insert_your_password',
+            enable_password='insert_your_enable_password',
             permission_bit=Permissions.DEVICE_VG01
         )
         db.session.add(vg)
