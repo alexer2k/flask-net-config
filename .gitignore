@@ -1,5 +1,7 @@
 # Byte-compiled / optimized / DLL files
+__pycache__
 __pycache__/
+__pycache__/*
 *.py[cod]
 *$py.class
 
@@ -87,7 +89,6 @@ Thumbs.db
 *.pyc
 *.pyo
 *.pyd
-__pycache__/
 
 # Configuration files
 config.ini
@@ -176,7 +177,6 @@ instance/
 
 # Python cache
 __pycache__/
-__pycache__/*
 *.py[cod]
 
 # Test and coverage
