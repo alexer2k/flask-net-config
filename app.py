@@ -483,4 +483,4 @@ def admin_audit():
 if __name__ == '__main__':
     # Threaded=True is useful for handling multiple slow telnet connections
     # host='0.0.0.0' makes the server accessible from other machines on the network
-    app.run(host='0.0.0.0', port=5000, debug=True, threaded=True)
+    app.run(host='0.0.0.0', port=5000, debug=False, threaded=True)
