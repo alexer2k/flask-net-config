@@ -1,0 +1,24 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Admin Panel</h2>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light mb-4">
+        <div class="container-fluid">
+            <ul class="navbar-nav me-auto">
+                <li class="nav-item">
+                    <a class="nav-link {% if active_page == 'users' %}active{% endif %}" href="{{ url_for('admin_users') }}">Users</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if active_page == 'devices' %}active{% endif %}" href="{{ url_for('admin_devices') }}">Devices</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if active_page == 'audit' %}active{% endif %}" href="{{ url_for('admin_audit') }}">Audit Log</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    {% block admin_content %}{% endblock %}
+</div>
+{% endblock %}

@@ -1,0 +1,42 @@
+{% extends "admin_base.html" %}
+
+{% block admin_content %}
+<h3>Audit Log</h3>
+
+<div class="card">
+    <div class="card-header">
+        <h5>System Activity</h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Timestamp</th>
+                        <th>User</th>
+                        <th>Device</th>
+                        <th>Action</th>
+                        <th>Details</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for log in logs %}
+                    <tr>
+                        <td>{{ log.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                        <td>{{ log.user_id }}</td>
+                        <td>{{ log.device_name }}</td>
+                        <td>{{ log.action }}</td>
+                        <td>{{ log.details }}</td>
+                    </tr>
+                    {% endfor %}
+                    {% if logs|length == 0 %}
+                    <tr>
+                        <td colspan="5" class="text-center">No audit logs found</td>
+                    </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

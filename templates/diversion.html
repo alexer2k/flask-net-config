@@ -1,0 +1,39 @@
+{% extends "layout.html" %}
+{% block content %}
+<h4>Manage Diversions: {{ device.name }}</h4>
+<p class="text-muted">Reading from: <code>voice translation-rule 2</code></p>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Rule ID</th>
+            <th>Incoming Number (Source)</th>
+            <th>Diverts To (Current)</th>
+            <th>New Destination</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for rule in rules %}
+        <tr>
+            <form method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <td>
+                    {{ rule.id }}
+                    <input type="hidden" name="rule_id" value="{{ rule.id }}">
+                    <input type="hidden" name="raw_source" value="{{ rule.raw_source }}">
+                </td>
+                <td>{{ rule.source }}</td>
+                <td><span class="badge bg-info">{{ rule.destination }}</span></td>
+                <td>
+                    <input type="number" name="new_dest" class="form-control form-control-sm" placeholder="New Number" required>
+                </td>
+                <td>
+                    <button type="submit" class="btn btn-success btn-sm" onclick="return confirm('Change rule {{rule.id}} diversion to ' + this.form.new_dest.value + '?');">Update</button>
+                </td>
+            </form>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
