@@ -13,6 +13,9 @@
                     <a class="nav-link {% if active_page == 'devices' %}active{% endif %}" href="{{ url_for('admin_devices') }}">Devices</a>
                 </li>
                 <li class="nav-item">
+                    <a class="nav-link {% if active_page == 'permissions' %}active{% endif %}" href="{{ url_for('admin_permissions') }}">Permissions</a>
+                </li>
+                <li class="nav-item">
                     <a class="nav-link {% if active_page == 'audit' %}active{% endif %}" href="{{ url_for('admin_audit') }}">Audit Log</a>
                 </li>
             </ul>

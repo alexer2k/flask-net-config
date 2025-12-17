@@ -49,12 +49,14 @@
                         Task Divert
                     </label>
                 </div>
+                {% for perm_value, perm_name in permissions %}
                 <div class="form-check">
-                    <input class="form-check-input" type="checkbox" name="permissions" value="4" id="device_vg01">
-                    <label class="form-check-label" for="device_vg01">
-                        Device VG01 Access
+                    <input class="form-check-input" type="checkbox" name="permissions" value="{{ perm_value }}" id="device_{{ perm_name.lower() }}">
+                    <label class="form-check-label" for="device_{{ perm_name.lower() }}">
+                        Device {{ perm_name }} Access
                     </label>
                 </div>
+                {% endfor %}
             </div>
 
             <button type="submit" class="btn btn-primary">Add User</button>
@@ -130,12 +132,14 @@
                                                     Task Divert
                                                 </label>
                                             </div>
+                                            {% for perm_value, perm_name in permissions %}
                                             <div class="form-check">
-                                                <input class="form-check-input" type="checkbox" name="permissions" value="4" id="edit_device_vg01_{{ user.id }}" {% if user.can(4) %}checked{% endif %}>
-                                                <label class="form-check-label" for="edit_device_vg01_{{ user.id }}">
-                                                    Device VG01 Access
+                                                <input class="form-check-input" type="checkbox" name="permissions" value="{{ perm_value }}" id="edit_device_{{ perm_name.lower() }}_{{ user.id }}" {% if user.can(perm_value) %}checked{% endif %}>
+                                                <label class="form-check-label" for="edit_device_{{ perm_name.lower() }}_{{ user.id }}">
+                                                    Device {{ perm_name }} Access
                                                 </label>
                                             </div>
+                                            {% endfor %}
                                         </div>
 
                                         <div class="modal-footer">

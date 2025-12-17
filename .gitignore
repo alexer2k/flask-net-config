@@ -1,0 +1,196 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Flask stuff
+instance/
+.webassets-cache
+
+# Database files
+*.sqlite
+*.db
+*.sqlite3
+*.sqlite-journal
+app.db
+
+# IDE specific files
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Logs
+logs/
+*.log
+
+# Runtime data
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Python specific
+*.pyc
+*.pyo
+*.pyd
+__pycache__/
+
+# Configuration files
+config.ini
+config.json
+*.ini
+*.cfg
+
+# Environment variables
+.env
+.env.local
+.env*.local
+
+# Flask specific
+instance/
+.webassets-cache
+
+# Build output
+build/
+dist/
+
+# Dependencies
+Pipfile.lock
+
+# Test files
+test/
+tests/
+*.test.js
+
+# Coverage files
+coverage/
+*.coverage
+
+# Node.js
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Local development files
+*.local
+*.dev
+
+# Windows specific
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Mac specific
+.DS_Store
+
+# Python virtual environment
+venv/
+.venv/
+env/
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+*.sqlite-journal
+
+# Log files
+*.log
+
+# IDE files
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Build artifacts
+build/
+dist/
+*.egg-info/
+
+# Dependency directories
+node_modules/
+
+# Environment files
+.env
+.env.local
+.env*.local
+
+# Flask session and cache
+instance/
+.webassets-cache
+
+# Python cache
+__pycache__/
+*.py[cod]
+
+# Test and coverage
+.coverage
+.tox/
+.pytest_cache/
+htmlcov/
+
+# Documentation build
+docs/_build/
+
+# Personal IDE settings
+.vscode/settings.json
+.idea/workspace.xml
+.idea/.name
+
+# Local development overrides
+local_settings.py

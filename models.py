@@ -35,6 +35,17 @@ class Device(db.Model):
     # Map this device to a Permission bit
     permission_bit = db.Column(db.Integer, default=0)
 
+class Permission(db.Model):
+    """Database model for managing permissions"""
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(50), unique=True, nullable=False)
+    value = db.Column(db.Integer, unique=True, nullable=False)
+    description = db.Column(db.String(200))
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def __repr__(self):
+        return f'<Permission {self.name} ({self.value})>'
+
 class AuditLog(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)

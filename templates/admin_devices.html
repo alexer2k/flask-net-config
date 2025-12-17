@@ -47,15 +47,14 @@
                     <label for="port" class="form-label">Port</label>
                     <input type="number" class="form-control" id="port" name="port" value="23">
                 </div>
-                <div class="col-md-4">
-                    <label for="permission_bit" class="form-label">Permission Bit</label>
-                    <select class="form-select" id="permission_bit" name="permission_bit">
-                        <option value="4">VG01 (4)</option>
-                        <option value="8">VG02 (8)</option>
-                        <option value="16">VG03 (16)</option>
-                        <option value="32">VG04 (32)</option>
-                    </select>
-                </div>
+                        <div class="col-md-4">
+                            <label for="permission_bit" class="form-label">Permission Bit</label>
+                            <select class="form-select" id="permission_bit" name="permission_bit">
+                                {% for perm_value, perm_name in permissions %}
+                                <option value="{{ perm_value }}">{{ perm_name }} ({{ perm_value }})</option>
+                                {% endfor %}
+                            </select>
+                        </div>
             </div>
 
             <div class="row mb-3">
@@ -164,10 +163,9 @@
                                         <div class="mb-3">
                                             <label for="edit_permission_bit_{{ device.id }}" class="form-label">Permission Bit</label>
                                             <select class="form-select" id="edit_permission_bit_{{ device.id }}" name="permission_bit">
-                                                <option value="4" {% if device.permission_bit == 4 %}selected{% endif %}>VG01 (4)</option>
-                                                <option value="8" {% if device.permission_bit == 8 %}selected{% endif %}>VG02 (8)</option>
-                                                <option value="16" {% if device.permission_bit == 16 %}selected{% endif %}>VG03 (16)</option>
-                                                <option value="32" {% if device.permission_bit == 32 %}selected{% endif %}>VG04 (32)</option>
+                                                {% for perm_value, perm_name in permissions %}
+                                                <option value="{{ perm_value }}" {% if device.permission_bit == perm_value %}selected{% endif %}>{{ perm_name }} ({{ perm_value }})</option>
+                                                {% endfor %}
                                             </select>
                                         </div>
 

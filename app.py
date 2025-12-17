@@ -2,7 +2,7 @@ from flask import Flask, render_template, redirect, url_for, request, flash
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 from flask_wtf.csrf import CSRFProtect
 from config import Config, Permissions
-from models import db, User, Device, AuditLog
+from models import db, User, Device, AuditLog, Permission
 from cisco_driver import CiscoVGDriver
 from functools import wraps
 
@@ -24,12 +24,34 @@ def load_user(user_id):
 @app.cli.command("init-db")
 def init_db():
     db.create_all()
+
+    # Initialize permissions
+    permissions_to_create = [
+        {"name": "ADMIN_ACCESS", "value": 1, "description": "Administrative access to all features"},
+        {"name": "TASK_DIVERT", "value": 2, "description": "Permission to manage call diversions"},
+        {"name": "DEVICE_VG01", "value": 4, "description": "Access to Voice Gateway 01"},
+        {"name": "DEVICE_VG02", "value": 8, "description": "Access to Voice Gateway 02"},
+        {"name": "DEVICE_VG03", "value": 16, "description": "Access to Voice Gateway 03"},
+        {"name": "DEVICE_VG04", "value": 32, "description": "Access to Voice Gateway 04"},
+        {"name": "DEVICE_VG05", "value": 64, "description": "Access to Voice Gateway 05"},
+        {"name": "DEVICE_VG06", "value": 128, "description": "Access to Voice Gateway 06"},
+    ]
+
+    for perm_data in permissions_to_create:
+        if not Permission.query.filter_by(name=perm_data["name"]).first():
+            permission = Permission(
+                name=perm_data["name"],
+                value=perm_data["value"],
+                description=perm_data["description"]
+            )
+            db.session.add(permission)
+
     # Create Admin
     if not User.query.filter_by(username='admin').first():
         admin = User(username='admin', role_mask=Permissions.get_default_admin())
         admin.set_password('admin')
         db.session.add(admin)
-    
+
     # Create the Voice Gateway from your text
     if not Device.query.filter_by(name='GW_DM_Fonia').first():
         vg = Device(
@@ -41,9 +63,9 @@ def init_db():
             permission_bit=Permissions.DEVICE_VG01
         )
         db.session.add(vg)
-    
+
     db.session.commit()
-    print("Database initialized.")
+    print("Database initialized with permissions, admin user, and default device.")
 
 # --- Routes ---
 
@@ -169,7 +191,8 @@ def admin_users():
             flash('User added successfully', 'success')
 
     users = User.query.all()
-    return render_template('admin_users.html', users=users, active_page='users')
+    permissions = Permissions.get_all_device_permissions()
+    return render_template('admin_users.html', users=users, permissions=permissions, active_page='users')
 
 @app.route('/admin/users/<int:user_id>/edit', methods=['POST'])
 @login_required
@@ -286,7 +309,8 @@ def admin_devices():
             flash('Device added successfully', 'success')
 
     devices = Device.query.all()
-    return render_template('admin_devices.html', devices=devices, active_page='devices')
+    permissions = Permissions.get_all_device_permissions()
+    return render_template('admin_devices.html', devices=devices, permissions=permissions, active_page='devices')
 
 @app.route('/admin/devices/<int:device_id>/edit', methods=['POST'])
 @login_required
@@ -341,6 +365,114 @@ def admin_delete_device(device_id):
     flash('Device deleted successfully', 'success')
     return redirect(url_for('admin_devices'))
 
+@app.route('/admin/permissions', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def admin_permissions():
+    if request.method == 'POST':
+        # Add new permission
+        name = request.form['name']
+        value = int(request.form['value'])
+        description = request.form['description']
+
+        # Check if permission exists
+        if Permission.query.filter_by(name=name).first():
+            flash('Permission name already exists', 'danger')
+        elif Permission.query.filter_by(value=value).first():
+            flash('Permission value already exists', 'danger')
+        else:
+            new_permission = Permission(
+                name=name,
+                value=value,
+                description=description
+            )
+            db.session.add(new_permission)
+            db.session.commit()
+
+            # Log action
+            log = AuditLog(
+                user_id=current_user.id,
+                device_name='SYSTEM',
+                action="Permission Created",
+                details=f"Created permission {name} with value {value}"
+            )
+            db.session.add(log)
+            db.session.commit()
+
+            flash('Permission added successfully', 'success')
+
+    permissions = Permission.query.order_by(Permission.value).all()
+    return render_template('admin_permissions.html', permissions=permissions, active_page='permissions')
+
+@app.route('/admin/permissions/<int:permission_id>/edit', methods=['POST'])
+@login_required
+@admin_required
+def admin_edit_permission(permission_id):
+    permission = Permission.query.get_or_404(permission_id)
+
+    name = request.form['name']
+    value = int(request.form['value'])
+    description = request.form['description']
+
+    # Check if name or value conflicts with other permissions
+    if Permission.query.filter(Permission.name == name, Permission.id != permission_id).first():
+        flash('Permission name already exists', 'danger')
+        return redirect(url_for('admin_permissions'))
+    elif Permission.query.filter(Permission.value == value, Permission.id != permission_id).first():
+        flash('Permission value already exists', 'danger')
+        return redirect(url_for('admin_permissions'))
+
+    # Update permission
+    permission.name = name
+    permission.value = value
+    permission.description = description
+    db.session.commit()
+
+    # Log action
+    log = AuditLog(
+        user_id=current_user.id,
+        device_name='SYSTEM',
+        action="Permission Updated",
+        details=f"Updated permission {name} with value {value}"
+    )
+    db.session.add(log)
+    db.session.commit()
+
+    flash('Permission updated successfully', 'success')
+    return redirect(url_for('admin_permissions'))
+
+@app.route('/admin/permissions/<int:permission_id>/delete', methods=['POST'])
+@login_required
+@admin_required
+def admin_delete_permission(permission_id):
+    permission = Permission.query.get_or_404(permission_id)
+
+    # Check if permission is used by any users or devices
+    users_with_permission = User.query.filter(User.role_mask.op('&')(permission.value) == permission.value).count()
+    devices_with_permission = Device.query.filter_by(permission_bit=permission.value).count()
+
+    if users_with_permission > 0 or devices_with_permission > 0:
+        flash(f'Cannot delete permission: {users_with_permission} users and {devices_with_permission} devices are using it', 'danger')
+        return redirect(url_for('admin_permissions'))
+
+    permission_name = permission.name
+    permission_value = permission.value
+    db.session.delete(permission)
+    db.session.commit()
+
+    # Log action
+    log = AuditLog(
+        user_id=current_user.id,
+        device_name='SYSTEM',
+        action="Permission Deleted",
+        details=f"Deleted permission {permission_name} with value {permission_value}"
+    )
+    db.session.add(log)
+    db.session.commit()
+
+    flash('Permission deleted successfully', 'success')
+    return redirect(url_for('admin_permissions'))
+
 @app.route('/admin/audit')
 @login_required
 @admin_required
@@ -350,4 +482,5 @@ def admin_audit():
 
 if __name__ == '__main__':
     # Threaded=True is useful for handling multiple slow telnet connections
-    app.run(host='0.0.0.0', port=5000, debug=False, threaded=True)
+    # host='0.0.0.0' makes the server accessible from other machines on the network
+    app.run(host='0.0.0.0', port=5000, debug=True, threaded=True)
