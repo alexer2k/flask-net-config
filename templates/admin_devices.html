@@ -230,6 +230,9 @@ document.addEventListener('DOMContentLoaded', function() {
             // Set form action
             document.getElementById('editDeviceForm').action = `/admin/devices/${deviceId}/edit`;
 
+            // Set modal title with device name
+            document.getElementById('editDeviceModalLabel').textContent = `{{ get_translation('admin.devices.edit_title') }}`.replace('{device_name}', deviceName);
+
             // Set form values
             document.getElementById('edit_name').value = deviceName;
             document.getElementById('edit_ip_address').value = deviceIp;
@@ -251,6 +254,9 @@ document.addEventListener('DOMContentLoaded', function() {
         button.addEventListener('click', function() {
             const deviceId = this.getAttribute('data-device-id');
             const deviceName = this.getAttribute('data-device-name');
+
+// Set modal title with device name
+document.getElementById('deleteDeviceModalLabel').textContent = `{{ get_translation('admin.devices.delete_button') }} ${deviceName}`;
 
 // Set message
 document.getElementById('deleteDeviceMessage').textContent = `{{ get_translation('admin.devices.delete_confirm') }}`.replace('{device_name}', deviceName);

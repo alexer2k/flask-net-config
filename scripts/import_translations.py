@@ -32,7 +32,7 @@ def import_translations():
             'nav.logout': 'Logout',
 
             # Devices
-            'devices.title': 'Manage Diversions: {device_name}',
+            'devices.title': 'Manage Diversions',
             'devices.source': 'Incoming Number (Source)',
             'devices.current': 'Diverts To (Current)',
             'devices.new_destination': 'New Destination',
@@ -160,7 +160,7 @@ def import_translations():
             'nav.logout': 'Esci',
 
             # Devices
-            'devices.title': 'Gestisci Deviazioni: {device_name}',
+            'devices.title': 'Gestisci Deviazioni',
             'devices.source': 'Numero Ingresso (Sorgente)',
             'devices.current': 'Deviazione Corrente (Corrente)',
             'devices.new_destination': 'Nuova Destinazione',

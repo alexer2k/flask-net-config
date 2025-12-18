@@ -11,6 +11,7 @@ import logging
 class TranslationService:
     def __init__(self, app=None):
         self.app = app
+        self._translation_cache = None
         if app is not None:
             self.init_app(app)
 
@@ -33,6 +34,7 @@ class TranslationService:
         """Make translation functions available in templates"""
         return {
             'get_translation': self.get_translation,
+            'get_translation_with_params': self.get_translation_with_params,
             'current_language': self.get_current_language,
             'available_languages': self.get_available_languages
         }
@@ -45,14 +47,22 @@ class TranslationService:
         """Get all available languages"""
         return Language.query.filter_by(is_active=True).all()
 
-    @lru_cache(maxsize=1000)
     def get_translation(self, key, language_code=None):
         """
         Get translation for a given key
         Uses caching for better performance
         """
+        # Initialize cache if not exists
+        if self._translation_cache is None:
+            self._translation_cache = lru_cache(maxsize=1000)(self._get_translation_uncached)
+
+        return self._translation_cache(key, language_code)
+
+    def _get_translation_uncached(self, key, language_code=None):
+        """Uncached version of translation lookup"""
         if language_code is None:
-            language_code = self.get_current_language()
+            # Get language directly from session to avoid caching issues
+            language_code = session.get('language', 'en-US')
 
         # Try to get from database
         translation = Translation.query.filter_by(
@@ -65,7 +75,7 @@ class TranslationService:
 
         # Fallback to English if not current language
         if language_code != 'en-US':
-            return self.get_translation(key, 'en-US')
+            return self._get_translation_uncached(key, 'en-US')
 
         # Return key as fallback if no translation found
         return key
@@ -78,7 +88,29 @@ class TranslationService:
             raise ValueError(f"Language {language_code} not available")
 
         session['language'] = language_code
+
+        # Clear translation cache when language changes
+        if self._translation_cache is not None:
+            self._translation_cache.cache_clear()
+
         return True
+
+    def get_translation_with_params(self, key, params=None, language_code=None):
+        """
+        Get translation for a given key with parameter replacement
+        Supports dynamic values like {username}, {device_name}, etc.
+        """
+        if params is None:
+            params = {}
+
+        translation = self.get_translation(key, language_code)
+
+        # Replace placeholders with actual values
+        if params:
+            for placeholder, value in params.items():
+                translation = translation.replace('{' + placeholder + '}', str(value))
+
+        return translation
 
 # Create instance
 translation_service = TranslationService()

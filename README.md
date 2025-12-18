@@ -2,6 +2,10 @@
 
 This project provides a Flask application for managing network device configurations, packaged as a Windows service using Waitress for production deployment.
 
+
+WANRING: 
+cisco_driver.py is using an hardcoded line == "voice translation-rule 2" - ToDo: manage all translation rules or a user selected subset
+
 ## Installation
 
 ### Prerequisites

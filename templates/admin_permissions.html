@@ -84,8 +84,8 @@
                     <div class="modal fade" id="editPermissionModal{{ permission.id }}" tabindex="-1" aria-labelledby="editPermissionModalLabel{{ permission.id }}" aria-hidden="true">
                         <div class="modal-dialog">
                             <div class="modal-content">
-                                <div class="modal-header">
-                                    <h5 class="modal-title" id="editPermissionModalLabel{{ permission.id }}">Edit Permission: {{ permission.name }}</h5>
+<div class="modal-header">
+    <h5 class="modal-title" id="editPermissionModalLabel{{ permission.id }}">{{ get_translation_with_params('admin.permissions.edit_title', {'permission_name': permission.name}) }}</h5>
                                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                 </div>
                                 <div class="modal-body">
@@ -126,7 +126,7 @@
                                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                 </div>
                                 <div class="modal-body">
-                                    <p>Are you sure you want to delete permission "{{ permission.name }}" (value: {{ permission.value }})?</p>
+<p>{{ get_translation_with_params('admin.permissions.delete_confirm', {'permission_name': permission.name, 'value': permission.value}) }}</p>
 <p class="text-danger">{{ get_translation('admin.permissions.cannot_delete') }}</p>
                                 </div>
                                 <div class="modal-footer">
@@ -220,6 +220,9 @@ document.addEventListener('DOMContentLoaded', function() {
             // Set form action
             document.getElementById('editPermissionForm').action = `/admin/permissions/${permissionId}/edit`;
 
+            // Set modal title with permission name
+            document.getElementById('editPermissionModalLabel').textContent = `{{ get_translation('admin.permissions.edit_title') }}`.replace('{permission_name}', permissionName);
+
             // Set form values
             document.getElementById('edit_name').value = permissionName;
             document.getElementById('edit_value').value = permissionValue;
@@ -238,8 +241,11 @@ document.addEventListener('DOMContentLoaded', function() {
             const permissionName = this.getAttribute('data-permission-name');
             const permissionValue = this.getAttribute('data-permission-value');
 
-            // Set message
-            document.getElementById('deletePermissionMessage').textContent = `Are you sure you want to delete permission "${permissionName}" (value: ${permissionValue})?`;
+// Set modal title with permission name and value
+document.getElementById('deletePermissionModalLabel').textContent = `{{ get_translation('admin.permissions.delete_button') }} ${permissionName}`;
+
+// Set message
+document.getElementById('deletePermissionMessage').textContent = `{{ get_translation('admin.permissions.delete_confirm') }}`.replace('{permission_name}', permissionName).replace('{value}', permissionValue);
 
             // Set form action
             document.getElementById('deletePermissionForm').action = `/admin/permissions/${permissionId}/delete`;

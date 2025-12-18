@@ -170,7 +170,7 @@
     <div class="modal-dialog">
         <div class="modal-content">
 <div class="modal-header">
-    <h5 class="modal-title" id="deleteUserModalLabel">{{ get_translation('admin.users.delete_button') }} {{ get_translation('admin.users.username') }}</h5>
+    <h5 class="modal-title" id="deleteUserModalLabel">{{ get_translation('admin.users.delete_button') }}</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
@@ -204,6 +204,9 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('edit_username').value = username;
             document.getElementById('editUserId').value = userId;
 
+            // Set modal title with selected user's username
+            document.getElementById('editUserModalLabel').textContent = `{{ get_translation('admin.users.edit_title') }}`.replace('{username}', username);
+
             // Set permissions checkboxes
             document.querySelectorAll('#editUserModal input[type="checkbox"]').forEach(checkbox => {
                 checkbox.checked = (permissions & parseInt(checkbox.value)) === parseInt(checkbox.value);
@@ -220,6 +223,9 @@ document.addEventListener('DOMContentLoaded', function() {
         button.addEventListener('click', function() {
             const userId = this.getAttribute('data-user-id');
             const username = this.getAttribute('data-user-username');
+
+// Set modal title with selected user's username
+document.getElementById('deleteUserModalLabel').textContent = `{{ get_translation('admin.users.delete_button') }} ${username}`;
 
 // Set message
 document.getElementById('deleteUserMessage').textContent = `{{ get_translation('admin.users.delete_confirm') }}`.replace('{username}', username);
