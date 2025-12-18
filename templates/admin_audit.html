@@ -1,22 +1,22 @@
 {% extends "admin_base.html" %}
 
 {% block admin_content %}
-<h3>Audit Log</h3>
+<h3>{{ get_translation('admin.audit.title') }}</h3>
 
 <div class="card">
-    <div class="card-header">
-        <h5>System Activity</h5>
-    </div>
+<div class="card-header">
+    <h5>{{ get_translation('admin.audit.timestamp') }}</h5>
+</div>
     <div class="card-body">
         <div class="table-responsive">
             <table class="table table-striped">
                 <thead>
                     <tr>
-                        <th>Timestamp</th>
-                        <th>User</th>
-                        <th>Device</th>
-                        <th>Action</th>
-                        <th>Details</th>
+<th>{{ get_translation('admin.audit.timestamp') }}</th>
+<th>{{ get_translation('admin.audit.user') }}</th>
+<th>{{ get_translation('admin.audit.device') }}</th>
+<th>{{ get_translation('admin.audit.action') }}</th>
+<th>{{ get_translation('admin.audit.details') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -31,7 +31,7 @@
                     {% endfor %}
                     {% if logs|length == 0 %}
                     <tr>
-                        <td colspan="5" class="text-center">No audit logs found</td>
+<td colspan="5" class="text-center">{{ get_translation('general.no_results') }}</td>
                     </tr>
                     {% endif %}
                 </tbody>
