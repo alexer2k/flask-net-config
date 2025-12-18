@@ -46,6 +46,32 @@ class Permission(db.Model):
     def __repr__(self):
         return f'<Permission {self.name} ({self.value})>'
 
+class Language(db.Model):
+    """Database model for supported languages"""
+    id = db.Column(db.Integer, primary_key=True)
+    code = db.Column(db.String(10), unique=True, nullable=False)  # 'en-US', 'it-IT'
+    name = db.Column(db.String(50), nullable=False)              # 'English (US)', 'Italian (IT)'
+    is_active = db.Column(db.Boolean, default=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def __repr__(self):
+        return f'<Language {self.code} ({self.name})>'
+
+class Translation(db.Model):
+    """Database model for translations"""
+    id = db.Column(db.Integer, primary_key=True)
+    key = db.Column(db.String(100), index=True, nullable=False)   # 'login.welcome', 'device.name'
+    language_code = db.Column(db.String(10), db.ForeignKey('language.code'), nullable=False)
+    value = db.Column(db.Text, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, onupdate=datetime.utcnow)
+
+    # Relationship
+    language = db.relationship('Language', backref='translations')
+
+    def __repr__(self):
+        return f'<Translation {self.key} ({self.language_code})>'
+
 class AuditLog(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)

@@ -1,8 +1,8 @@
-from flask import Flask, render_template, redirect, url_for, request, flash
+from flask import Flask, render_template, redirect, url_for, request, flash, jsonify
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 from flask_wtf.csrf import CSRFProtect
 from config import Config, Permissions
-from models import db, User, Device, AuditLog, Permission
+from models import db, User, Device, AuditLog, Permission, Language, Translation
 from cisco_driver import CiscoVGDriver
 from functools import wraps
 
@@ -16,13 +16,27 @@ db.init_app(app)
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
 
+# Initialize translation service
+from services.translation_service import translation_service
+translation_service.init_app(app)
+
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
 
+@app.cli.command("import-translations")
+def cli_import_translations():
+    """Import initial translations into the database"""
+    from scripts.import_translations import import_translations as do_import
+    if do_import():
+        print("Translations imported successfully!")
+    else:
+        print("Failed to import translations")
+
 # --- CLI Command to init DB ---
 @app.cli.command("init-db")
 def init_db():
+
     db.create_all()
 
     # Initialize permissions
@@ -36,6 +50,20 @@ def init_db():
         {"name": "DEVICE_VG05", "value": 64, "description": "Access to Voice Gateway 05"},
         {"name": "DEVICE_VG06", "value": 128, "description": "Access to Voice Gateway 06"},
     ]
+
+    # Initialize languages
+    languages_to_create = [
+        {"code": "en-US", "name": "English (US)"},
+        {"code": "it-IT", "name": "Italian (IT)"},
+    ]
+
+    for lang_data in languages_to_create:
+        if not Language.query.filter_by(code=lang_data["code"]).first():
+            language = Language(
+                code=lang_data["code"],
+                name=lang_data["name"]
+            )
+            db.session.add(language)
 
     for perm_data in permissions_to_create:
         if not Permission.query.filter_by(name=perm_data["name"]).first():
@@ -479,6 +507,29 @@ def admin_delete_permission(permission_id):
 def admin_audit():
     logs = AuditLog.query.order_by(AuditLog.timestamp.desc()).all()
     return render_template('admin_audit.html', logs=logs, active_page='audit')
+
+# Language Routes
+@app.route('/set-language/<language_code>')
+@login_required
+def set_language(language_code):
+    try:
+        from services.translation_service import translation_service
+        translation_service.set_language(language_code)
+        flash(f"Language set to {language_code}", "success")
+    except ValueError as e:
+        flash(str(e), "danger")
+
+    # Redirect back to the previous page
+    return redirect(request.referrer or url_for('dashboard'))
+
+@app.route('/get-languages')
+def get_languages():
+    from services.translation_service import translation_service
+    languages = translation_service.get_available_languages()
+    return jsonify([{
+        'code': lang.code,
+        'name': lang.name
+    } for lang in languages])
 
 if __name__ == '__main__':
     # Threaded=True is useful for handling multiple slow telnet connections
