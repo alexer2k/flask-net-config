@@ -508,6 +508,108 @@ def admin_audit():
     logs = AuditLog.query.order_by(AuditLog.timestamp.desc()).all()
     return render_template('admin_audit.html', logs=logs, active_page='audit')
 
+@app.route('/admin/translations', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def admin_translations():
+    if request.method == 'POST':
+        # Add new translation
+        key = request.form['key']
+        language_code = request.form['language_code']
+        value = request.form['value']
+
+        # Check if translation exists for this key and language
+        if Translation.query.filter_by(key=key, language_code=language_code).first():
+            flash('Translation already exists for this key and language', 'danger')
+        else:
+            new_translation = Translation(
+                key=key,
+                language_code=language_code,
+                value=value
+            )
+            db.session.add(new_translation)
+            db.session.commit()
+
+            # Log action
+            log = AuditLog(
+                user_id=current_user.id,
+                device_name='SYSTEM',
+                action="Translation Created",
+                details=f"Created translation {key} for language {language_code}"
+            )
+            db.session.add(log)
+            db.session.commit()
+
+            flash('Translation added successfully', 'success')
+
+    translations = Translation.query.order_by(Translation.key, Translation.language_code).all()
+    languages = Language.query.filter_by(is_active=True).all()
+    return render_template('admin_translations.html', translations=translations, languages=languages, active_page='translations')
+
+@app.route('/admin/translations/<int:translation_id>/edit', methods=['POST'])
+@login_required
+@admin_required
+def admin_edit_translation(translation_id):
+    translation = Translation.query.get_or_404(translation_id)
+
+    key = request.form['key']
+    language_code = request.form['language_code']
+    value = request.form['value']
+
+    # Check if translation exists for this key and language (excluding current translation)
+    existing_translation = Translation.query.filter(
+        Translation.key == key,
+        Translation.language_code == language_code,
+        Translation.id != translation_id
+    ).first()
+
+    if existing_translation:
+        flash('Translation already exists for this key and language', 'danger')
+        return redirect(url_for('admin_translations'))
+
+    # Update translation
+    translation.key = key
+    translation.language_code = language_code
+    translation.value = value
+    db.session.commit()
+
+    # Log action
+    log = AuditLog(
+        user_id=current_user.id,
+        device_name='SYSTEM',
+        action="Translation Updated",
+        details=f"Updated translation {key} for language {language_code}"
+    )
+    db.session.add(log)
+    db.session.commit()
+
+    flash('Translation updated successfully', 'success')
+    return redirect(url_for('admin_translations'))
+
+@app.route('/admin/translations/<int:translation_id>/delete', methods=['POST'])
+@login_required
+@admin_required
+def admin_delete_translation(translation_id):
+    translation = Translation.query.get_or_404(translation_id)
+
+    key = translation.key
+    language_code = translation.language_code
+    db.session.delete(translation)
+    db.session.commit()
+
+    # Log action
+    log = AuditLog(
+        user_id=current_user.id,
+        device_name='SYSTEM',
+        action="Translation Deleted",
+        details=f"Deleted translation {key} for language {language_code}"
+    )
+    db.session.add(log)
+    db.session.commit()
+
+    flash('Translation deleted successfully', 'success')
+    return redirect(url_for('admin_translations'))
+
 # Language Routes
 @app.route('/set-language/<language_code>')
 @login_required

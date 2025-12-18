@@ -1,0 +1,223 @@
+{% extends "admin_base.html" %}
+
+{% block admin_content %}
+<h3>{{ get_translation('admin.translations.title') }}</h3>
+
+<!-- Success/Error Messages -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        {% for category, message in messages %}
+            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+{% endwith %}
+
+<!-- Add Translation Form -->
+<div class="card mb-4">
+    <div class="card-header">
+        <h5>{{ get_translation('admin.translations.add_title') }}</h5>
+    </div>
+    <div class="card-body">
+        <form method="POST" action="{{ url_for('admin_translations') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+            <div class="row mb-3">
+                <div class="col-md-4">
+                    <label for="key" class="form-label">{{ get_translation('admin.translations.key') }}</label>
+                    <input type="text" class="form-control" id="key" name="key" required>
+                </div>
+                <div class="col-md-4">
+                    <label for="language_code" class="form-label">{{ get_translation('admin.translations.language') }}</label>
+                    <select class="form-select" id="language_code" name="language_code" required>
+                        {% for lang in languages %}
+                        <option value="{{ lang.code }}">{{ lang.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label for="value" class="form-label">{{ get_translation('admin.translations.value') }}</label>
+                    <input type="text" class="form-control" id="value" name="value" required>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary">{{ get_translation('admin.translations.add_button') }}</button>
+        </form>
+    </div>
+</div>
+
+<!-- Translations List -->
+<div class="card">
+    <div class="card-header">
+        <h5>{{ get_translation('admin.translations.existing') }}</h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>{{ get_translation('admin.translations.key') }}</th>
+                        <th>{{ get_translation('admin.translations.language') }}</th>
+                        <th>{{ get_translation('admin.translations.value') }}</th>
+                        <th>{{ get_translation('general.action') }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for translation in translations %}
+                    <tr>
+                        <td>{{ translation.id }}</td>
+                        <td>{{ translation.key }}</td>
+                        <td>{{ translation.language_code }}</td>
+                        <td>{{ translation.value }}</td>
+                        <td>
+                            <button class="btn btn-sm btn-warning edit-translation-btn"
+                                    data-translation-id="{{ translation.id }}"
+                                    data-translation-key="{{ translation.key }}"
+                                    data-translation-language="{{ translation.language_code }}"
+                                    data-translation-value="{{ translation.value }}">
+                                <i class="bi bi-pencil"></i> {{ get_translation('admin.translations.edit_button') }}
+                            </button>
+                            <button class="btn btn-sm btn-danger delete-translation-btn"
+                                    data-translation-id="{{ translation.id }}"
+                                    data-translation-key="{{ translation.key }}">
+                                <i class="bi bi-trash"></i> {{ get_translation('admin.translations.delete_button') }}
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Translation Modal -->
+<div class="modal fade" id="editTranslationModal" tabindex="-1" aria-labelledby="editTranslationModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editTranslationModalLabel">{{ get_translation('admin.translations.edit_title') }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editTranslationForm" method="POST">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <input type="hidden" id="editTranslationId" name="translation_id" value="">
+
+                    <div class="mb-3">
+                        <label for="edit_key" class="form-label">{{ get_translation('admin.translations.key') }}</label>
+                        <input type="text" class="form-control" id="edit_key" name="key" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="edit_language_code" class="form-label">{{ get_translation('admin.translations.language') }}</label>
+                        <select class="form-select" id="edit_language_code" name="language_code" required>
+                            {% for lang in languages %}
+                            <option value="{{ lang.code }}">{{ lang.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="edit_value" class="form-label">{{ get_translation('admin.translations.value') }}</label>
+                        <input type="text" class="form-control" id="edit_value" name="value" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ get_translation('general.close') }}</button>
+                    <button type="submit" class="btn btn-primary">{{ get_translation('admin.translations.save_changes') }}</button>
+                </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Translation Modal -->
+<div class="modal fade" id="deleteTranslationModal" tabindex="-1" aria-labelledby="deleteTranslationModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteTranslationModalLabel">{{ get_translation('admin.translations.delete_button') }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p id="deleteTranslationMessage">{{ get_translation('admin.translations.delete_confirm') }}</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ get_translation('general.cancel') }}</button>
+                <form id="deleteTranslationForm" method="POST" style="display: inline;">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="btn btn-danger">{{ get_translation('admin.translations.delete_button') }}</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Translation management modal handling
+document.addEventListener('DOMContentLoaded', function() {
+    // Edit translation buttons
+    document.querySelectorAll('.edit-translation-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const translationId = this.getAttribute('data-translation-id');
+            const key = this.getAttribute('data-translation-key');
+            const languageCode = this.getAttribute('data-translation-language');
+            const value = this.getAttribute('data-translation-value');
+
+            // Set form action
+            document.getElementById('editTranslationForm').action = `/admin/translations/${translationId}/edit`;
+
+            // Set form values
+            document.getElementById('editTranslationId').value = translationId;
+            document.getElementById('edit_key').value = key;
+            document.getElementById('edit_language_code').value = languageCode;
+            document.getElementById('edit_value').value = value;
+
+            // Set modal title with translation key
+            document.getElementById('editTranslationModalLabel').textContent =
+                `{{ get_translation('admin.translations.edit_title') }}`.replace('{key}', key);
+
+            // Show modal
+            const modal = new bootstrap.Modal(document.getElementById('editTranslationModal'));
+            modal.show();
+        });
+    });
+
+    // Delete translation buttons
+    document.querySelectorAll('.delete-translation-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const translationId = this.getAttribute('data-translation-id');
+            const key = this.getAttribute('data-translation-key');
+
+            // Set modal title with translation key
+            document.getElementById('deleteTranslationModalLabel').textContent =
+                `{{ get_translation('admin.translations.delete_button') }} ${key}`;
+
+            // Set message
+            document.getElementById('deleteTranslationMessage').textContent =
+                `{{ get_translation('admin.translations.delete_confirm') }}`.replace('{key}', key);
+
+            // Set form action
+            document.getElementById('deleteTranslationForm').action = `/admin/translations/${translationId}/delete`;
+
+            // Show modal
+            const modal = new bootstrap.Modal(document.getElementById('deleteTranslationModal'));
+            modal.show();
+        });
+    });
+});
+</script>
+{% endblock %}
+<task_progress>
+- [x] Analyze current admin structure and models
+- [ ] Create translation management interface
+- [ ] Implement CRUD operations for translations
+- [ ] Integrate with existing admin panel
+- [ ] Test the implementation
+</task_progress>
+</write_to_file>
