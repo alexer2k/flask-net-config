@@ -10,7 +10,7 @@ cisco_driver.py is using an hardcoded line == "voice translation-rule 2" - ToDo:
 
 ### Prerequisites
 - Windows 10/11 or Windows Server
-- Python 3.7+
+- Python 3.11.14 (or compatible 3.11+ version)
 - Administrator privileges
 
 ### Installation Steps
@@ -92,3 +92,5 @@ If you prefer an executable file instead of a Windows service, you can use PyIns
 - The service runs with the same permissions as the user who installed it
 - Database files are stored in the application directory
 - Logs are written to the Windows Event Log
+
+On older windows 2008 R2 Server, beter __Use NSSM__: The most reliable way to run Python venv scripts as services is using [NSSM (Non-Sucking Service Manager)](https://nssm.cc/). Command: `nssm install FlaskNetConfigService "D:\path\to.venv\Scripts\python.exe" "D:\path\to\service_wrapper.py" "debug"`
